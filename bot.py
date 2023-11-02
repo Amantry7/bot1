@@ -1,5 +1,5 @@
 from aiogram import Bot, Dispatcher,types, executor
-import random
+from aiogram.types import ReplyKeyboardMarkup,KeyboardButton,ReplyKeyboardRemove 
 
 TOKEN_API = "6492785279:AAG6XcUcFe3wvtY1HSeDlOe3r4pyk-7V3oE"
 
@@ -8,64 +8,49 @@ dp = Dispatcher(bot)
 count = 0
 async def on_startup(_):
     print("Бот подключон ")
+help_command = """
+<b>/start</b> - <em>начала нашей работы </em>
+<b>/help</b> - <em>список команд</em>
+<b>/котик</b> - <em>котик </em>
+<b>/location</b> - <em>локация</em>
 
-helpcomm = """
-<b>/start</b> - <em>запускает бота </em>
-<b>/help</b> - <em>показывает список команд </em>
-<b>/cat</b> - <em>показывает кота </em>
-<b>/description</b> - <em>о боте </em>
-<b>/count</b> - <em>счетчик</em>"""
-@dp.message_handler(text=["как ты", "Как ты"])
-async def send_welcome(message:types.Message): 
-    await message.answer("Да не плохо ")
-    
-@dp.message_handler(content_types=['sticker'])
-async def send_stic_id(message:types.Message):
-    await message.answer(message.sticker.file_id)
-    
-# @dp.message_handler()
-# async def echo(message:types.Message):
-#     await message.answer(message.text)
+"""
 
-@dp.message_handler(commands=['help'])
-async def send_help(message:types.Message):
-    await message.reply(text= helpcomm, parse_mode='HTML') 
-@dp.message_handler(commands=['start']) 
-async def send_welcome(message:types.Message): 
-    await message.answer("Привет я бот для учебы" )
+kb = ReplyKeyboardMarkup(resize_keyboard=True)
+b1 = KeyboardButton('/help')
+b2 = KeyboardButton('/котик')
+b3 = KeyboardButton('/location')
+kb.add(b1).insert(b2).insert(b3)
+
+@dp.message_handler(commands=['start'])
+async def send_start(message:types.Message):
+    await bot.send_message(chat_id=message.from_user.id,text="добро пожалывать в группу",reply_markup=kb)
     await message.delete()
-@dp.message_handler(commands=['description'])
-async def send_descr(message:types.Message):
-    await message.reply("""
-я телеграм бот для учобы 
-мой создатель это Аман 
-он создал меня попреколу
-(он мне даже имя не дал:( """)
-@dp.message_handler(commands=['count'])
-async def send_count(message:types.Message):
-    global count 
-    await message.answer(F"число: {count}")
-    count += 1
-# @dp.message_handler()
-# async def echo(massage:types.Message):
-#     if massage.text.count >= 1:
-#        await massage.answer(text=massage.text)
-
-@dp.message_handler(commands=['cat'])
-async def sent_cat(message:types.Message):
-    await message.answer("смотри какой котик ❤️") 
-    await bot.send_sticker(message.from_user.id, sticker ='CAACAgIAAxkBAAEKnJFlOnbM4ozl8bbHmF1zVGer3KZDFQACfwcAAhhC7ghjZeQdLEIAAaAwBA')    
     
-@dp.message_handler(text=["❤️"])
-async def heart(message:types.Message):
-    await message.reply("🤍")  
-       
+@dp.message_handler(commands=['help'])
+async def help_comm(message:types.Message): 
+    await bot.send_message(chat_id=message.from_user.id,text=help_command, parse_mode='HTML',reply_markup=ReplyKeyboardRemove()) 
+    await message.delete() 
+    
+@dp.message_handler(commands=['котик'])
+async def send_image(message:types.Message):
+    await bot.send_photo(chat_id=message.chat.id, photo='https://icdn.lenta.ru/images/2020/09/30/13/20200930130228617/detail_9ad62f72eb0b24b9b8f76677d3a1c605.jpg')     
+    await message.delete()
+
+@dp.message_handler(commands=['location'])
+async def send_point(message:types.Message): 
+    await bot.send_location(chat_id=message.from_user.id,
+                            latitude=34,
+                            longitude=76)
+    await message.delete()
 @dp.message_handler()
 async def send_emoji(message:types.Message):
-    await message.reply(message.text + " что за хуйня")
+    await bot.send_message(chat_id=message.from_user.id,text="Привет мой друг",)
+    
+
 
 
 
 if __name__ == '__main__': 
-    executor.start_polling(dp, on_startup=on_startup)
+    executor.start_polling(dp, on_startup=on_startup, skip_updates=True)
     
